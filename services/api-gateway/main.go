@@ -2,8 +2,9 @@ package main
 
 import (
 	"log"
-	"my-golang-blueprint/shared/env"
 	"net/http"
+
+	"github.com/Hajdudev/ai-planner/shared/env"
 )
 
 var httpAddr = env.GetString("HTTP_ADDR", ":8081")
