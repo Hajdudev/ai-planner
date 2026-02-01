@@ -1,0 +1,72 @@
+syntax = "proto3";
+
+package auth;
+
+option go_package = "shared/proto/auth;auth";
+
+service AuthService {
+  rpc GetAccessTokenFromRefreshToken(GetAccessTokenFromRefreshTokenRequest) returns (GetAccessTokenFromRefreshTokenResponse);
+  rpc Login(LoginRequest) returns (LoginResponse);
+  rpc Signup(SignupRequest) returns (SignupResponse);
+  rpc VerifyEmail(VerifyEmailRequest) returns (VerifyEmailResponse);
+  rpc ForgotPassword(ForgotPasswordRequest) returns (ForgotPasswordResponse);
+  rpc VerifyPasswordReset(VerifyPasswordResetRequest) returns (VerifyPasswordResetResponse);
+}
+
+message GetAccessTokenFromRefreshTokenRequest {
+  string refresh_token = 1;
+}
+
+message AuthTokens {
+  string refresh_token = 1;
+  string access_token = 2;
+  string expires_in = 3;
+}
+message GetAccessTokenFromRefreshTokenResponse {
+  AuthTokens tokens = 1;
+}
+message LoginResponse {
+  AuthTokens tokens = 1;
+}
+
+message LoginRequest {
+  string email = 1;
+  string password_hash = 2;
+}
+
+message SignupRequest {
+  string email = 1;
+  string username = 2;
+  string password_hash = 3;
+}
+
+message SignupResponse {
+  string verification_id = 1;
+  int32 expires_in = 2;
+}
+
+message VerifyEmailRequest {
+  string verification_id = 1;
+  string code = 2;
+}
+
+message VerifyEmailResponse {
+  AuthTokens tokens = 1;
+}
+message ForgotPasswordRequest {
+  string email = 1;
+}
+message ForgotPasswordResponse {
+  string reset_id = 1;
+  int32 expires_in = 2;
+}
+
+message VerifyPasswordResetRequest {
+  string reset_id = 1;
+  string code = 2;
+  string password_hash = 3;
+}
+
+message VerifyPasswordResetResponse {
+  AuthTokens tokens = 1;
+}
