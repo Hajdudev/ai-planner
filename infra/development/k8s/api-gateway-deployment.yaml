@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: api-gateway
-          image: my-golang-blueprint/api-gateway
+          image: ai-planner/api-gateway
           ports:
             - containerPort: 8081
           resources:

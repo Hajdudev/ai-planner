@@ -6,6 +6,7 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base64"
+	"fmt"
 	"time"
 
 	"github.com/Hajdudev/ai-planner/services/auth-service/internal/domain"
@@ -56,4 +57,23 @@ func (s *AuthService) CreateRefreshToken(ctx context.Context) (string, error) {
 	}
 
 	return refreshToken, nil
+}
+
+func (s *AuthService) GetAccessTokenFromRefreshToken(ctx context.Context, userID, refreshToken string) (string, error) {
+	userRefreshToken, err := s.repo.GetRefreshToken(ctx, domain.UserID(userID))
+	if err != nil {
+		return "", err
+	}
+
+	hmacHasher := hmac.New(sha256.New, hashSecret)
+	hmacHasher.Write([]byte(refreshToken))
+	hashedToken := base64.URLEncoding.EncodeToString(hmacHasher.Sum(nil))
+	if userRefreshToken != domain.RefreshToken(hashedToken) {
+		return "", fmt.Errorf("invalid Refresh Token")
+	}
+	accessToken, err := auth.NewJWTUser(userID, time.Minute*15)
+	if err != nil {
+		return "", err
+	}
+	return accessToken, nil
 }

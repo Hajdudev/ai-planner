@@ -22,7 +22,7 @@ local_resource(
 
 
 docker_build_with_restart(
-  'my-golang-blueprint/api-gateway',
+  'ai-planner/api-gateway',
   '.',
   entrypoint=['/app/build/api-gateway'],
   dockerfile='./infra/development/docker/api-gateway.Dockerfile',
@@ -40,10 +40,38 @@ k8s_yaml('./infra/development/k8s/api-gateway-deployment.yaml')
 k8s_resource('api-gateway', port_forwards=8081,
              resource_deps=['api-gateway-compile'], labels="services")
 ### End of API Gateway ###
+#### Trip Service ###
+
+auth_compile_cmd = 'CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o build/auth-service ./services/auth-service/cmd/main.go'
+
+local_resource(
+  'auth-service-compile',
+  auth_compile_cmd,
+  deps=['./services/auth-service', './shared'], labels="compiles")
+
+docker_build_with_restart(
+  'ai-planner/auth-service',
+  '.',
+  entrypoint=['/app/build/auth-service'],
+  dockerfile='./infra/development/docker/auth-service.Dockerfile',
+  only=[
+    './build/auth-service',
+    './shared',
+  ],
+  live_update=[
+    sync('./build', '/app/build'),
+    sync('./shared', '/app/shared'),
+  ],
+)
+
+k8s_yaml('./infra/development/k8s/auth-service-deployment.yaml')
+k8s_resource('auth-service', resource_deps=['auth-service-compile'], labels="services")
+
+### End of Trip Service ###
 ### Web Frontend ###
 
 docker_build(
-  'my-golang-blueprint/web',
+  'ai-planner/web',
   '.',
   dockerfile='./infra/development/docker/web.Dockerfile',
 )
